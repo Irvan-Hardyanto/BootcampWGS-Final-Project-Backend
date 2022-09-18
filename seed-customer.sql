@@ -1,0 +1,3 @@
+INSERT INTO public.t_user(name,"userName",password,email,mobile,photo,role) VALUES('Ghilbi Faqih','ghilbi','indomie','ghilbi@gmail.com','088812341234','temp',3);
+INSERT INTO public.t_user(name,"userName",password,email,mobile,photo,role) VALUES('Irvan Hardyanto','irv98','osas','irvan@gmail.com','088812341234','temp',3);
+INSERT INTO public.t_user(name,"userName",password,email,mobile,photo,role) VALUES('Adriana','adrianaa','wgsgood','adriana@gmail.com','088812341234','temp',3);
