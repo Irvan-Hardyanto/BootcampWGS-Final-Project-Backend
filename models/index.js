@@ -24,5 +24,18 @@ db.DataTypes = DataTypes;
 db.sequelize = sequelize;
 
 db.user = require("./user.model.js")(sequelize, DataTypes);
+db.refreshToken = require("./refreshToken.model.js")(sequelize, DataTypes);
+
+//relasi satu-ke-satu antara tabel 'user' dan 'refreshTokens'
+//refreshTokens punya foreign key yang merujuk ke id dari sebuah User
+db.refreshToken.belongsTo(db.user, {
+  foreignKey: 'userId', targetKey: 'id'
+});
+
+//relasi satu-ke-satu antara tabel 'user' dan 'refreshTokens'
+//buat sebuah foreign key pada tabel 'refreshTokens' yang merujuk ke atribut id pada tabel user
+db.user.hasOne(db.refreshToken, {
+  foreignKey: 'userId', targetKey: 'id'
+});
 
 module.exports = db;

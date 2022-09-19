@@ -1,5 +1,6 @@
 
-
+//model dari tabel t_user
+//Tabel tersebut merepresentasikan seluruh pengguna baik itu customer, admin, maupun superadmin
 module.exports=(sequelize,DataTypes)=>{
     const User = sequelize.define("t_user",{
           id:{

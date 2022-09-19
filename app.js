@@ -63,7 +63,7 @@ const User = db.user;
 db.sequelize.sync().then(succ=>{
 
 }).catch(err=>{
-    console.log(err);
+    //console.log(err);
 });
 //midleware
 //supaya requestnyadikonversike json
@@ -116,23 +116,24 @@ app.post('/login',[upload.none(),middlewares.validators.loginDataValidator,middl
 // app.use(middlewares.verifySignUp.checkDuplicateUsername);
 app.post('/register',[upload.none(),middlewares.validators.registerDataValidator,middlewares.validators.verifyRegisterData],authController.signup);
 
+app.post('/refreshToken',[upload.none()],authController.refreshToken);
 //route untuk logout
 app.get('/logout',(req,res)=>{
 
 })
 
 //route untuk melihat produk yang ada di dalam keranjang
-app.get('/cart',(req,res)=>{
-
+app.get('/cart',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{
+    res.status(200).send('this is cart page');
 })
 
 //route untuk halaman detil akun
-app.get('/profile',(req,res)=>{
+app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{
 
 })
 
 //route untuk melihat detail produk tertentu
-app.get('/product/detail',(req,res)=>{//+id produk 
+app.get('/product/detail',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{//+id produk 
 
 })
 
