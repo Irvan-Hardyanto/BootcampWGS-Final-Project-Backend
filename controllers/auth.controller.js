@@ -22,7 +22,7 @@ const signup=(req,res)=>{
         role:3
     }).then(succ=>{
         res.status(200).send({
-            message:"sign up completed!"
+            msg:"sign up completed!"
         })
     }).catch(err=>{
         res.status(400).send(err);
@@ -37,15 +37,16 @@ const signin=(req,res)=>{
         }
     }).then(async(user)=>{
         if(!user){//jika tidak ada user dengan username yang dimasukkan oleh pengguna
-            return res.status(404).send({message:"User not found!"});
+            return res.status(404).send({msg:"User not found!",param:"userName"});
         }
 
         //periksa apakah password yang dimasukkan sudah benar
         if(!bcrypt.compareSync(req.body.password,user.password)){
-            return res.status(401).send({
+            return res.status(401).send(Array({
                 accessToken:null,
-                message:"wrong Password!"
-            });
+                msg:"wrong Password!",
+                param:"password"
+            }));
         }
 
         //payload di acces token
@@ -64,7 +65,7 @@ const signin=(req,res)=>{
         //generate refresh token
         let refreshToken = await RefreshToken.createToken(user);
 
-        //kirim token yang sudah di generate
+        //kirim token yang sudah di generate ke halaman login, ntar kalo gak ada error, 
         res.status(200).send({
             id: userID,
             userName,
@@ -74,7 +75,7 @@ const signin=(req,res)=>{
             refreshToken
         })
     }).catch(err=>{
-        res.status(500).send({ message: err.message });
+        res.status(500).send(Array({ msg: err.message,param:"other"}));
     })
 }
 
@@ -85,14 +86,14 @@ const refreshToken = async(req,res)=>{
     //jika tidak ada refresh token yang dilampirkan, tampikan pesan kesalahan
     if (requestToken == null) {
         //403: Forbidden, pengguna ini tidak diizinkan untuk mengakses resource
-        return res.status(403).json({ message: "Refresh Token is required!" });
+        return res.status(403).json({ msg: "Refresh Token is required!" });
     }
 
     try{
         let refreshToken = await RefreshToken.findOne({where:{token:requestToken}});
         if(!refreshToken){
             //403: Forbidden, pengguna ini tidak diizinkan untuk mengakses resource
-            return res.status(403).json({ message: "Refresh token is not in database!" });
+            return res.status(403).json({ msg: "Refresh token is not in database!" });
         }
 
         //jika refresh token yang dimiliki oleh pengguna sudah kedaluarasa (expired)
@@ -101,7 +102,7 @@ const refreshToken = async(req,res)=>{
             RefreshToken.destroy({where:{id: refreshToken.id}});
 
             res.status(403).json({
-                message: "Refresh token was expired. Please make a new signin request",
+                msg: "Refresh token was expired. Please make a new signin request",
             });
             return;
         }
@@ -115,7 +116,7 @@ const refreshToken = async(req,res)=>{
             refreshToken: refreshToken.token
         })
     }catch(err){
-        return res.status(500).send({ message: err });
+        return res.status(500).send({ msg: err });
     }
 }
 

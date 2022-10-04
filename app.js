@@ -1,12 +1,11 @@
 // import modul-modul yang dibutuhkan
 const express=require('express');
-const session=require('express-session');
-const { body,validationResult,check } = require('express-validator');
 const multer  = require('multer');
-const jwt = require('jsonwebtoken');
-const bcrypt = require("bcryptjs");
-const { Sequelize, DataTypes, Model } = require('sequelize');//untuk ORM
-
+const { faker } = require('@faker-js/faker');
+const cors = require('cors');
+var corsOptions = {
+    origin:'http://localhost:3000'
+};
 
 //import modul-modul buatan sendiri
 const db=require('./models');
@@ -23,9 +22,9 @@ const pool = require("./db");//untuk koneksi ke database
 
 //inisialisasi objek express.js
 const app = express();
-const port = 3000;//port number
+const port = 9000;//port number
 
-const User = db.user;
+const Product = db.product;
 
 //untuk mengisi database dengan data testing
 // const seedUser=()=>{
@@ -60,15 +59,33 @@ const User = db.user;
 //     })
 // }
 
-db.sequelize.sync().then(succ=>{
+//dikutip dari laman w3schools.com
+//https://www.w3schools.com/js/js_random.asp
+// function getRndInteger(min, max) {
+//     return Math.floor(Math.random() * (max - min + 1) ) + min;
+//   }
 
+// const generateDummyProductData=(productNum,Product)=>{
+    
+//     for(let i=0;i<=productNum;i++){
+//         Product.create({
+//             name: faker.commerce.productName(),
+//             description: faker.commerce.productDescription(),
+//             price: getRndInteger(10000,100000),
+//             stock: getRndInteger(1,100),
+//             unit:''
+//         });
+//     }  
+// }
+db.sequelize.sync().then(succ=>{
+    
 }).catch(err=>{
     //console.log(err);
 });
 //midleware
 //supaya requestnyadikonversike json
-// app.use(express.json());
-// app.use(express.urlencoded({extended:true}));
+app.use(express.json());
+app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
@@ -107,14 +124,15 @@ app.get('/',(req,res)=>{
     
 })
 
-//route untuk login
-//NOTE!! middleware yg digunakan adalah multer, jadi perlu parameter tambahan di function post() / get()
-//Jika data dikirimkan dari sebuah form, pastikan metode 'enctype' nya di set ke: 'multipart/form-data'
-app.post('/login',[upload.none(),middlewares.validators.loginDataValidator,middlewares.validators.verifyLoginData],authController.signin);
+//untuk CORS preflight
+app.options('/login', cors(corsOptions))
 
-// app.use(middlewares.validators.verifyRegisterData);
-// app.use(middlewares.verifySignUp.checkDuplicateUsername);
-app.post('/register',[upload.none(),middlewares.validators.registerDataValidator,middlewares.validators.verifyRegisterData],authController.signup);
+//route untuk login
+//enctype: application/x-www-form-urlencoded
+app.post('/login',[cors(corsOptions),middlewares.validators.loginDataValidator,middlewares.validators.verifyLoginData],authController.signin);
+
+app.options('/register', cors(corsOptions))
+app.post('/register',[cors(corsOptions),middlewares.validators.registerDataValidator,middlewares.validators.verifyRegisterData],authController.signup);
 
 app.post('/refreshToken',[upload.none()],authController.refreshToken);
 //route untuk logout
@@ -129,6 +147,10 @@ app.get('/cart',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{
 
 //route untuk halaman detil akun
 app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{
+
+})
+
+app.get('/product',upload.none(),(req,res)=>{
 
 })
 

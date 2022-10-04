@@ -25,6 +25,7 @@ db.sequelize = sequelize;
 
 db.user = require("./user.model.js")(sequelize, DataTypes);
 db.refreshToken = require("./refreshToken.model.js")(sequelize, DataTypes);
+db.product = require("./product.model")(sequelize,DataTypes);
 
 //relasi satu-ke-satu antara tabel 'user' dan 'refreshTokens'
 //refreshTokens punya foreign key yang merujuk ke id dari sebuah User

@@ -26,7 +26,7 @@ const verifyRegisterData=(req,res,next)=>{
         errorMessages.push({
             'value': undefined,
             'msg': 'Incorrect password confirmation!',
-            'param': 'password',
+            'param': 'confPassword',
             'location': 'function'
         })
         //kalau nanti front end udah beres, ganti jadi tampilkan pesan error
@@ -39,7 +39,7 @@ const verifyRegisterData=(req,res,next)=>{
 const verifyLoginData=(req,res,next)=>{
     let errorMessages = validationResult(req).array();
     if(errorMessages.length>0){
-        return res.send(errorMessages);
+        return res.status(400).send(errorMessages);
     }
     next();
 }
