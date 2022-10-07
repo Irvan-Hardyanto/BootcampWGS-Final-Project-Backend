@@ -18,6 +18,24 @@ const loginDataValidator=[
     check("password","Please insert your password!").not().isEmpty()
 ]
 
+//express-validator hanya bisa buat string
+const addProductValidator=[
+    check("name","Please insert product name!").not().isEmpty(),
+    check("description","Please insert product description!").not().isEmpty(),
+    check("price","Please insert product price!").not().isEmpty(),
+    check("stock","Please insert product stock!").not().isEmpty(),
+    check("image","Please upload product picture!").not().isEmpty(),
+    check("unit","Please insert product unit!").not().isEmpty()
+]
+
+//middleware untuk validasi data produk yang ditambahkan
+const validateProductData=(req,res,next)=>{
+    let errorMessages =validationResult(req).array();
+    if(errorMessages.length>0){
+        return res.status(400).send(errorMessages);//kembalikan pesan kesalahan
+    }
+}
+
 const verifyRegisterData=(req,res,next)=>{
     let errorMessages = validationResult(req).array();
     if(errorMessages.length>0){
@@ -44,4 +62,4 @@ const verifyLoginData=(req,res,next)=>{
     next();
 }
 
-module.exports={verifyRegisterData,verifyLoginData,loginDataValidator,registerDataValidator};
+module.exports={addProductValidator,validateProductData,verifyRegisterData,verifyLoginData,loginDataValidator,registerDataValidator};

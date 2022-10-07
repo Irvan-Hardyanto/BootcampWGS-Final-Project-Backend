@@ -15,17 +15,27 @@ const { user: User, refreshToken: RefreshToken } = db;
 //untuk daftar
 const signup=(req,res)=>{
     //tambahkan user baru ke dalam tabel
-    User.create({
-        userName: req.body.userName,
-        name:req.body.name,
-        password: bcrypt.hashSync(req.body.password, 8),
-        role:3
+    User.findOne({//cari user dengan username yang dimasukkan oleh pengguna
+        where:{
+            userName:req.body.userName
+        }
+    }).then(user=>{
+        if(user){
+            return res.status(400).send(Array({msg: "this username is already used!",param:"userName"}));
+        }else{
+            return User.create({
+                userName: req.body.userName,
+                name:req.body.name,
+                password: bcrypt.hashSync(req.body.password, 8),
+                role:3
+            })
+        }
     }).then(succ=>{
         res.status(200).send({
             msg:"sign up completed!"
         })
     }).catch(err=>{
-        res.status(400).send(err);
+        res.status(400).send(Array({msg: err,param:"query or db related error"}));
     })
 }
 
@@ -37,7 +47,7 @@ const signin=(req,res)=>{
         }
     }).then(async(user)=>{
         if(!user){//jika tidak ada user dengan username yang dimasukkan oleh pengguna
-            return res.status(404).send({msg:"User not found!",param:"userName"});
+            return res.status(404).send(Array({msg:"User not found!",param:"userName"}));
         }
 
         //periksa apakah password yang dimasukkan sudah benar

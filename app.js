@@ -11,6 +11,7 @@ var corsOptions = {
 const db=require('./models');
 const middlewares =require("./middleware");
 const authController=require('./controllers/auth.controller');
+const productController=require('./controllers/product.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -118,7 +119,9 @@ const loadRows=(tableName)=>{
 const getRows=(tableName)=>{
     
 }
-
+app.get('/test',(req,res)=>{
+    res.render(__dirname + '/views/test-gambar.ejs')
+})
 //route default ke dashboard
 app.get('/',(req,res)=>{
     
@@ -150,15 +153,20 @@ app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)
 
 })
 
-app.get('/product',upload.none(),(req,res)=>{
+app.options('/customer/productlist', cors(corsOptions))
+app.get('/customer/productlist',cors(corsOptions),productController.getAllProduct);
 
-})
+app.options('/product/add', cors(corsOptions))
+app.post('/product/add',[cors(corsOptions),upload.single('image')],productController.addProduct)
 
 //route untuk melihat detail produk tertentu
 app.get('/product/detail',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{//+id produk 
 
 })
 
+app.options('/product/picture/:productId', cors(corsOptions))
+//route untuk merespons permintaan gambar produk tertentu
+app.get('/product/picture/:productId',[cors(corsOptions)],productController.getProductImage);
 //menambahkan user tententu entah itu customer,admin,ataupun superadmin
 app.post('/user/add',upload.single('photo'),(req,res)=>{
     addRow('t_user',req).then(suc=>{
