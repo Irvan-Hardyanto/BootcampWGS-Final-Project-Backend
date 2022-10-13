@@ -30,12 +30,13 @@ const signup=(req,res)=>{
                 role:3
             })
         }
-    }).then(succ=>{
-        res.status(200).send({
-            msg:"sign up completed!"
+    }).then(user=>{
+        return res.status(200).send({
+            msg:"sign up completed!",
+            id:user.id
         })
     }).catch(err=>{
-        res.status(400).send(Array({msg: err,param:"query or db related error"}));
+        return res.status(400).send(Array({msg: err,param:"query or db related error"}));
     })
 }
 
@@ -78,8 +79,6 @@ const signin=(req,res)=>{
         //kirim token yang sudah di generate ke halaman login, ntar kalo gak ada error, 
         res.status(200).send({
             id: userID,
-            userName,
-            name,
             role,
             accessToken,
             refreshToken

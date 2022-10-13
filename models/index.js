@@ -26,6 +26,8 @@ db.sequelize = sequelize;
 db.user = require("./user.model.js")(sequelize, DataTypes);
 db.refreshToken = require("./refreshToken.model.js")(sequelize, DataTypes);
 db.product = require("./product.model")(sequelize,DataTypes);
+db.cart= require("./cart.model")(sequelize,DataTypes);
+db.payment=require("./payment.model")(sequelize,DataTypes);
 
 //relasi satu-ke-satu antara tabel 'user' dan 'refreshTokens'
 //refreshTokens punya foreign key yang merujuk ke id dari sebuah User
@@ -38,5 +40,14 @@ db.refreshToken.belongsTo(db.user, {
 db.user.hasOne(db.refreshToken, {
   foreignKey: 'userId', targetKey: 'id'
 });
+
+//satu customer hanya punya satu cart
+db.cart.belongsTo(db.user, {
+  foreignKey: 'userId', targetKey: 'id'
+});
+
+db.user.hasOne(db.cart, {
+  foreignKey: 'userId', targetKey: 'id'
+})
 
 module.exports = db;

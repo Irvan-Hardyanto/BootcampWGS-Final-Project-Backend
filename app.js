@@ -12,6 +12,7 @@ const db=require('./models');
 const middlewares =require("./middleware");
 const authController=require('./controllers/auth.controller');
 const productController=require('./controllers/product.controller');
+const cartController=require('./controllers/cart.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -153,16 +154,15 @@ app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)
 
 })
 
-app.options('/customer/productlist', cors(corsOptions))
-app.get('/customer/productlist',cors(corsOptions),productController.getAllProduct);
+app.options('/products', cors(corsOptions))
+app.get('/products',cors(corsOptions),productController.getAllProduct);
 
 app.options('/product/add', cors(corsOptions))
 app.post('/product/add',[cors(corsOptions),upload.single('image')],productController.addProduct)
 
+app.options('/products/:productId', cors(corsOptions))
 //route untuk melihat detail produk tertentu
-app.get('/product/detail',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)=>{//+id produk 
-
-})
+app.get('/products/:productId',[cors(corsOptions)],productController.getProductById)
 
 app.options('/product/picture/:productId', cors(corsOptions))
 //route untuk merespons permintaan gambar produk tertentu
@@ -176,9 +176,25 @@ app.post('/user/add',upload.single('photo'),(req,res)=>{
     });
 })
 
-// app.get('/user/delete/',upload.none(),(req,res)=>{
 
-// })
+app.options('/carts', cors(corsOptions));
+//route untuk membuat 'keranjang' baru
+app.post('/carts',[cors(corsOptions)],cartController.createCart);
+
+//route untuk mengambil semua barang yang ada di dalam 'keranjang belanja' milik klien tertentu
+app.get('/carts',[cors(corsOptions)],cartController.getCart);
+
+app.options('/carts/:userId', cors(corsOptions));
+// route untuk mengupdate keranjang milik customer tertentu
+app.put('/carts/:userId',[cors(corsOptions)],cartController.updateCart);
+
+// app.put('/carts/:userId/')
+
+// //route untuk menghapus keranjang beserta seluruh isinya milik user tertentu
+// app.delete('/carts/:userId/')
+
+// //route untuk menghapus produk tertentu dari keranjang belanja milik customer tertentu.
+// app.delete('/carts/:userId/product/:productId')
 
 app.post('/roles/add',(req,res)=>{
     addRow('t_role',req).then(succ=>{

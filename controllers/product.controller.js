@@ -5,7 +5,7 @@ const { product: Product } = db;
 
 const getAllProduct = (req,res)=>{	
 	Product.findAll({
-		attributes:['id','name','description','price','stock','image','unit']
+		attributes:['id','name','description','price','stock','image','unit','createdAt','updatedAt']
 	}).then(products=>{
 		if(products.length===0){
 			return res.status(500).send(
@@ -30,6 +30,24 @@ const getProduct= (req,res)=>{
 		}
 	}).catch(err=>{
 		return res.status(500).send(Array({msg:err,param:"db"}))
+	})
+}
+
+const getProductById=(req,res)=>{
+	Product.findOne({
+		attributes:['id','name','description','price','stock','image','unit'],
+		where:{
+			id:parseInt(req.params.productId)
+		}
+	}).then(product=>{
+		if(product){
+			return res.status(200).send(product);
+		}else{
+			return res.status(400).send(Array({msg:"Product not found",param:"productId"}))
+		}
+	}).catch(error=>{
+		return res.sendStatus(500)
+		console.log(error)
 	})
 }
 
@@ -134,4 +152,4 @@ const getProductImage=(req,res)=>{
     })
 }
 
-module.exports={getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};
+module.exports={getProductById,getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};
