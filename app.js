@@ -13,6 +13,7 @@ const middlewares =require("./middleware");
 const authController=require('./controllers/auth.controller');
 const productController=require('./controllers/product.controller');
 const cartController=require('./controllers/cart.controller');
+const paymentController=require('./controllers/payment.controller')
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -187,6 +188,20 @@ app.get('/carts',[cors(corsOptions)],cartController.getCart);
 app.options('/carts/:userId', cors(corsOptions));
 // route untuk mengupdate keranjang milik customer tertentu
 app.put('/carts/:userId',[cors(corsOptions)],cartController.updateCart);
+
+app.options('/payments',cors(corsOptions))
+app.get('/payments',[cors(corsOptions)],paymentController.getAllPaymentData);
+
+//enc type: multitype / form-data !!!
+app.post('/payments',[cors(corsOptions),upload.single('paymentConfirmation')],paymentController.addPayment);
+
+
+app.options('/payments/:paymentId',cors(corsOptions));
+//untuk menandai kalau transaksinya sudah selesai
+app.put('/payments/:paymentId',[cors(corsOptions)],paymentController.finishPayment);
+
+app.options('/payments/image/:paymentId', cors(corsOptions));
+app.get('/payments/image/:paymentId',[cors(corsOptions)],paymentController.getPaymentConfirmation);
 
 // app.put('/carts/:userId/')
 

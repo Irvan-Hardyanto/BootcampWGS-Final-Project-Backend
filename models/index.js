@@ -50,4 +50,13 @@ db.user.hasOne(db.cart, {
   foreignKey: 'userId', targetKey: 'id'
 })
 
+//user (customer) dan payment berelasi satu ke banyak
+db.user.hasMany(db.payment, {
+  foreignKey: 'userId', targetKey: 'id'
+})
+
+db.payment.belongsTo(db.user, {
+  foreignKey: 'userId', targetKey: 'id'
+})
+
 module.exports = db;

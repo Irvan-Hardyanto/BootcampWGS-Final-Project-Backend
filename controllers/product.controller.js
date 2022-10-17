@@ -149,6 +149,9 @@ const getProductImage=(req,res)=>{
     }).then(product=>{
     	//console.log('IMAGE PATH: '+path.join(__dirname, '..',product.image))
         res.status(200).sendFile(path.join(__dirname, '..',product.image));
+    }).catch(err=>{
+    	res.status(500).send();
+    	console.log(err);
     })
 }
 
