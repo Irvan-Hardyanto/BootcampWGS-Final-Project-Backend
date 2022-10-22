@@ -3,7 +3,15 @@ const path = require('node:path');
 const { payment: Payment} = db;
 
 const addPayment=(req,res)=>{
+	
 	//harusnya payment untuk tiap transaksi itu cuma bisa satu
+	console.log('A REQUEST HAS BEEN RECEIVED')
+	// console.log('req.body is: '+(req.body));
+	console.log('userId: '+parseInt(req.body.userId));
+	console.log('items: '+req.body.items);
+	console.log('nominal: '+parseInt(req.body.nominal));
+	console.log('paymentConfirmation: '+req.file.path);
+
 	Payment.create({
 		userId: parseInt(req.body.userId),
 		items: req.body.items,
@@ -11,10 +19,11 @@ const addPayment=(req,res)=>{
 		paymentConfirmation: req.file.path,
 		paid: false
 	}).then(pay=>{
-		res.status(200).send();
+		console.log('appending succes')
+		res.status(200).send('Payment Success!');
 	}).catch(err=>{
 		console.log(err);
-		res.status(500).send();
+		res.status(500).send(err);
 	})
 }
 
@@ -26,8 +35,8 @@ const getAllPaymentData=(req,res)=>{
 	}).then(payments=>{
 		return res.status(200).send(payments);
 	}).catch(err=>{
-		console.log();
-		return res.sendStatus(500);
+		console.log(err);
+		return res.status(500).send(err);
 	})
 }
 
@@ -51,7 +60,7 @@ const finishPayment=(req,res)=>{
 		}
 	}).catch(err=>{
 		console.log(err);
-		res.sendStatus(500);
+		res.status(500).send(err);
 	})
 }
 
@@ -69,7 +78,7 @@ const findPaymentByUserId=(req,res)=>{
 		return res.status(200).send(paymentRecords);
 	}).catch(err=>{
 		console.log(err);
-		res.sendStatus(500);
+		res.status(500).send(err);
 	})
 }
 const getPaymentConfirmation=(req,res)=>{
@@ -82,7 +91,7 @@ const getPaymentConfirmation=(req,res)=>{
 		res.status(200).sendFile(path.join(__dirname, '..',payment.paymentConfirmation));
 	}).catch(err=>{
 		console.log(err);
-		res.status(500).send();
+		res.status(500).send(err);
 	})
 }
 

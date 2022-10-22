@@ -28,6 +28,8 @@ db.refreshToken = require("./refreshToken.model.js")(sequelize, DataTypes);
 db.product = require("./product.model")(sequelize,DataTypes);
 db.cart= require("./cart.model")(sequelize,DataTypes);
 db.payment=require("./payment.model")(sequelize,DataTypes);
+db.selling=require("./selling.model")(sequelize,DataTypes);
+db.log=require("./log.model")(sequelize,DataTypes);
 
 //relasi satu-ke-satu antara tabel 'user' dan 'refreshTokens'
 //refreshTokens punya foreign key yang merujuk ke id dari sebuah User
@@ -57,6 +59,17 @@ db.user.hasMany(db.payment, {
 
 db.payment.belongsTo(db.user, {
   foreignKey: 'userId', targetKey: 'id'
+})
+
+//payment dan product itu berelasi banyak ke banyak (many-to-many)
+db.payment.belongsToMany(db.product,{
+  through: db.selling,
+  foreignKey:'paymentId',
+})
+
+db.product.belongsToMany(db.payment,{
+  through: db.selling,
+  foreignKey:'productId',
 })
 
 module.exports = db;

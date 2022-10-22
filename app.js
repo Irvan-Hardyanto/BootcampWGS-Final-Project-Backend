@@ -2,6 +2,7 @@
 const express=require('express');
 const multer  = require('multer');
 const { faker } = require('@faker-js/faker');
+var morgan = require('morgan');
 const cors = require('cors');
 var corsOptions = {
     origin:'http://localhost:3000'
@@ -13,7 +14,8 @@ const middlewares =require("./middleware");
 const authController=require('./controllers/auth.controller');
 const productController=require('./controllers/product.controller');
 const cartController=require('./controllers/cart.controller');
-const paymentController=require('./controllers/payment.controller')
+const paymentController=require('./controllers/payment.controller');
+const sellingController=require('./controllers/selling.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -28,58 +30,6 @@ const app = express();
 const port = 9000;//port number
 
 const Product = db.product;
-
-//untuk mengisi database dengan data testing
-// const seedUser=()=>{
-//     User.create({
-//         name: "Ghilbi Faqih",
-//         userName: "ghilbi",
-//         password: "indomie",
-//         email:"ghilbi@gmail.com",
-//         mobile:"088812341234",
-//         photo:"/test",
-//         role:3
-//     });
-
-//     User.create({
-//         name: "Irvan Hardyanto",
-//         userName: "irv98",
-//         password: "osas",
-//         email:"irvan@gmail.com",
-//         mobile:"088812341234",
-//         photo:"/test",
-//         role:3
-//     })
-
-//     User.create({
-//         name: "Adriana",
-//         userName: "adrianaa",
-//         password: "wgsisgood",
-//         email:"adriana@gmail.com",
-//         mobile:"088812341234",
-//         photo:"/test",
-//         role:3
-//     })
-// }
-
-//dikutip dari laman w3schools.com
-//https://www.w3schools.com/js/js_random.asp
-// function getRndInteger(min, max) {
-//     return Math.floor(Math.random() * (max - min + 1) ) + min;
-//   }
-
-// const generateDummyProductData=(productNum,Product)=>{
-    
-//     for(let i=0;i<=productNum;i++){
-//         Product.create({
-//             name: faker.commerce.productName(),
-//             description: faker.commerce.productDescription(),
-//             price: getRndInteger(10000,100000),
-//             stock: getRndInteger(1,100),
-//             unit:''
-//         });
-//     }  
-// }
 db.sequelize.sync().then(succ=>{
     
 }).catch(err=>{
@@ -90,6 +40,8 @@ db.sequelize.sync().then(succ=>{
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
+app.use(morgan(':referrer :method :url :status - :response-time ms'));
+app.use(middlewares.morganMiddleware);
 app.set('view engine', 'ejs');
 
 //route untuk menambahkan data tertentu ke dalam tabel tertentu, menggunakan kueri sql biasa
@@ -158,12 +110,14 @@ app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)
 app.options('/products', cors(corsOptions))
 app.get('/products',cors(corsOptions),productController.getAllProduct);
 
-app.options('/product/add', cors(corsOptions))
-app.post('/product/add',[cors(corsOptions),upload.single('image')],productController.addProduct)
+app.options('/products', cors(corsOptions))
+app.post('/products',[cors(corsOptions),upload.single('image')],productController.addProduct)
 
 app.options('/products/:productId', cors(corsOptions))
 //route untuk melihat detail produk tertentu
 app.get('/products/:productId',[cors(corsOptions)],productController.getProductById)
+
+//tambahin route PUT sama DELETE buat hapus barang
 
 app.options('/product/picture/:productId', cors(corsOptions))
 //route untuk merespons permintaan gambar produk tertentu
@@ -202,6 +156,10 @@ app.put('/payments/:paymentId',[cors(corsOptions)],paymentController.finishPayme
 
 app.options('/payments/image/:paymentId', cors(corsOptions));
 app.get('/payments/image/:paymentId',[cors(corsOptions)],paymentController.getPaymentConfirmation);
+
+app.options('/sellings',cors(corsOptions));
+app.post('/sellings',[cors(corsOptions)],sellingController.insertSellingData);
+app.get('/sellings',[cors(corsOptions)],sellingController.getAllSellingData);
 
 // app.put('/carts/:userId/')
 

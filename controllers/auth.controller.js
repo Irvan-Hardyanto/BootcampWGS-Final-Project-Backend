@@ -79,6 +79,7 @@ const signin=(req,res)=>{
         //kirim token yang sudah di generate ke halaman login, ntar kalo gak ada error, 
         res.status(200).send({
             id: userID,
+            username: userName,
             role,
             accessToken,
             refreshToken
