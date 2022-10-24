@@ -16,6 +16,7 @@ const productController=require('./controllers/product.controller');
 const cartController=require('./controllers/cart.controller');
 const paymentController=require('./controllers/payment.controller');
 const sellingController=require('./controllers/selling.controller');
+const userController=require('./controllers/user.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -29,9 +30,10 @@ const pool = require("./db");//untuk koneksi ke database
 const app = express();
 const port = 9000;//port number
 
-const Product = db.product;
+const Role = db.role;
+//sb.sequelize itu untuk membuat tabel-tabel yang didefinisikan di berkas ../models/index.js
 db.sequelize.sync().then(succ=>{
-    
+
 }).catch(err=>{
     //console.log(err);
 });
@@ -40,7 +42,6 @@ db.sequelize.sync().then(succ=>{
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
-app.use(morgan(':referrer :method :url :status - :response-time ms'));
 app.use(middlewares.morganMiddleware);
 app.set('view engine', 'ejs');
 
@@ -130,6 +131,16 @@ app.post('/user/add',upload.single('photo'),(req,res)=>{
         res.send(err);
     });
 })
+
+//untuk preflight request
+app.options('/users',cors(corsOptions));
+// '/users?role=3 untuk daftar customer'
+// '/users?role=2 untuk daftar admin'
+// '/users?role=1 untuk daftar superadmin'
+app.get('/users',[cors(corsOptions)],userController.getUsers);
+app.put('/users',[cors(corsOptions)],userController.modifyUserRole);
+app.options('/users/:id',cors(corsOptions));
+app.delete('/users/:id',[cors(corsOptions)],userController.deleteUser);
 
 
 app.options('/carts', cors(corsOptions));

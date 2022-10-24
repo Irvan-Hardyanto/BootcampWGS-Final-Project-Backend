@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes)=>{
   		},
   		userId : {
     		type: DataTypes.INTEGER,
-    		allowNull: false
+    		allowNull: true
   		},
 		timestamp:{
 			type: DataTypes.DATE,
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes)=>{
 		},
 		role:{
 			type: DataTypes.INTEGER,
-			allowNull: false
+			allowNull: true
 		},
 		sourceIP:{
 			type: DataTypes.STRING,

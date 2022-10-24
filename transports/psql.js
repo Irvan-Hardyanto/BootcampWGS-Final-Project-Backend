@@ -17,8 +17,8 @@ module.exports = class CustomTransport extends Transport {
   writeToDatabase(text){
   	const fields = text.split(" ");
   	const timestamp= fields[0]
-    const userId = fields[1];
-    const role=fields[2];
+    let userId = fields[1];
+    let role=fields[2];
   	const sourceIP = fields[3];
   	const method =fields[4];
   	const url = fields[5];
@@ -26,6 +26,12 @@ module.exports = class CustomTransport extends Transport {
   	const responseTime = fields[7];
   	const totalTime = fields[8];
   	
+    if(userId=='-'){
+      userId=null;
+    }
+    if(role=='-'){
+      role=null;
+    }
     log.create({
       userId,
       timestamp,
