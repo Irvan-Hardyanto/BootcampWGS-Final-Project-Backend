@@ -65,8 +65,10 @@ const signin=(req,res)=>{
         const userName=user.userName;
         const name=user.name;
         const role=user.role;
+        const email=user.email;
+        const mobile=user.mobile;
 
-        const payload={userID};
+        const payload={userID,userName,name,role,email,mobile};
         
         //generate access token
         const accessToken=jwt.sign(payload,config.jwtSecretKey,{

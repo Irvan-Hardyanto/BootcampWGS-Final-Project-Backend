@@ -17,6 +17,7 @@ const cartController=require('./controllers/cart.controller');
 const paymentController=require('./controllers/payment.controller');
 const sellingController=require('./controllers/selling.controller');
 const userController=require('./controllers/user.controller');
+const logController=require('./controllers/log.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -172,6 +173,8 @@ app.options('/sellings',cors(corsOptions));
 app.post('/sellings',[cors(corsOptions)],sellingController.insertSellingData);
 app.get('/sellings',[cors(corsOptions)],sellingController.getAllSellingData);
 
+app.options('/logs',cors(corsOptions));
+app.get('/logs',[cors(corsOptions)],logController.getAllLogs);
 // app.put('/carts/:userId/')
 
 // //route untuk menghapus keranjang beserta seluruh isinya milik user tertentu

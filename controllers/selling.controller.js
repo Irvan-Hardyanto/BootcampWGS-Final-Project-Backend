@@ -1,5 +1,5 @@
 //import model nya
-const { selling : Selling } = require("../models");
+const { selling : Selling, sequelize } = require("../models");
 
 //POST
 //asumsi di sini request nya udah valid
@@ -41,12 +41,48 @@ const getAllSellingData = (req,res)=>{
 	if(req.query.orderby && req.query.order){
 		obj.order=[[req.query.orderby,req.query.order]];
 	}
-	Selling.findAll(obj).then(rows=>{
-		res.status(200).send(rows)
-	}).catch(err=>{
-		console.log(err);
-		res.status(500).send(err);
-	})
+	if(req.query.groupby){
+		console.log('groupby query string detected..value is: '+req.query.groupby)
+		//raw query
+		let rawQuery="";
+
+		const groupby=req.query.groupby;
+		if(groupby==='product'){
+			//tampilkan data selling berdasarkan nama produk
+			rawQuery=`SELECT a."productId",a."productName", SUM(a.quantity) AS "totalProductSold"
+						FROM "Sellings" AS "a"
+						GROUP BY a."productId",a."productName"`;
+			sequelize.query(rawQuery).then(([results])=>{
+				res.status(200).send(results);
+			}).catch(err=>{
+				console.log(err)
+				res.status(500).send(err);
+			})
+		}else if(groupby==='customer'){
+			rawQuery=`SELECT "UsrPay"."customerId","UsrPay".name,SUM("Sellings".quantity) AS "totBuy"
+FROM (SELECT a.id AS "customerId",a.name,b.id AS "paymentId"
+FROM t_user AS "a" INNER JOIN "Payments" AS "b"
+ON a.id=b."userId") AS "UsrPay" INNER JOIN "Sellings"
+ON "UsrPay"."paymentId"="Sellings"."paymentId"
+GROUP BY "UsrPay"."customerId","UsrPay".name`;
+			sequelize.query(rawQuery).then(([results])=>{
+				res.status(200).send(results);
+			}).catch(err=>{
+				console.log(err)
+				res.status(500).send(err);
+			})
+		}else{
+			return res.status(400).send('Invalid query!')
+		}
+
+	}else{
+		Selling.findAll(obj).then(rows=>{
+			res.status(200).send(rows)
+		}).catch(err=>{
+			console.log(err);
+			res.status(500).send(err);
+		})
+	}
 }
 
 module.exports={insertSellingData,getAllSellingData};
