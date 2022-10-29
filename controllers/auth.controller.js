@@ -41,6 +41,8 @@ const signup=(req,res)=>{
 }
 
 //untuk login
+//req.body.userName
+//req.body.password
 const signin=(req,res)=>{
     User.findOne({//cari user dengan username yang dimasukkan oleh pengguna
         where:{
@@ -48,14 +50,14 @@ const signin=(req,res)=>{
         }
     }).then(async(user)=>{
         if(!user){//jika tidak ada user dengan username yang dimasukkan oleh pengguna
-            return res.status(404).send(Array({msg:"User not found!",param:"userName"}));
+            return res.status(404).send(Array({msg:"Username or Password Is Incorrect!",param:"userName"}));
         }
 
         //periksa apakah password yang dimasukkan sudah benar
         if(!bcrypt.compareSync(req.body.password,user.password)){
             return res.status(401).send(Array({
                 accessToken:null,
-                msg:"wrong Password!",
+                msg:"Username or Password Is Incorrect!",
                 param:"password"
             }));
         }
@@ -82,6 +84,10 @@ const signin=(req,res)=>{
         res.status(200).send({
             id: userID,
             role,
+           'fullname':user.name,
+            'email':user.email,
+            'mobile':user.mobile,
+            'picture':user.photo,
             accessToken,
             refreshToken
         })

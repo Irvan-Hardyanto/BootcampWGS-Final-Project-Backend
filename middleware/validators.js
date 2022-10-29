@@ -14,8 +14,8 @@ const registerDataValidator=[
 
 const loginDataValidator=[
     //https://stackoverflow.com/a/50809691
-    check("userName","Please insert your username!").not().isEmpty(),
-    check("password","Please insert your password!").not().isEmpty()
+    check("userName","Please insert your username and password!").not().isEmpty(),
+    check("password","Please insert your username and password!").not().isEmpty()
 ]
 
 //express-validator hanya bisa buat string

@@ -68,27 +68,27 @@ const updateProduct = (req,res)=>{
 	let updateList={};
 	let notEmpty=false;
 	//bisa update salah satu field atau semuanya
-	if(req.body.name){
+	if(req.body.name!== undefined){
 		updateList.name=req.body.name;
 		notEmpty=true;
 	}
-	if(req.body.description){
+	if(req.body.description!== undefined){
 		updateList.description=req.body.description;
 		notEmpty=true;
 	}
-	if(req.body.price){
+	if(req.body.price!== undefined){
 		updateList.price=req.body.price;
 		notEmpty=true;
 	}
-	if(req.body.stock){
+	if(req.body.stock!== undefined){
 		updateList.stock=req.body.stock;
 		notEmpty=true;
 	}
-	if(req.body.image){
-		updateList.image=req.body.image;
+	if(req.file!== undefined){
+		updateList.image=req.file.path;
 		notEmpty=true;
 	}
-	if(req.body.unit){
+	if(req.body.unit!== undefined){
 		updateList.unit=req.body.unit;
 		notEmpty=true;
 	}
@@ -97,14 +97,20 @@ const updateProduct = (req,res)=>{
 		//minimal harus udpate satu field
 		return res.status(400).send(Array({msg:'Please provide at least one field!',param:'other'}));
 	}
-
-	Product.update(updateList,{
+	Product.findOne({
 		where:{
-			id:req.body.id
+			id: parseInt(req.params.productId)
 		}
-	}).then(res=>{
-		return res.status(200).send(Array({msg:`Successfuly updating ${res[0]} products!`}));
+	}).then(product=>{
+		product.update(updateList,{
+			where:{
+				id:req.body.id
+			}
+		}).then(product=>{
+			return res.status(200).send(Array({msg:`Successfuly updating ${res[0]} products!`}));
+		})
 	}).catch(err=>{
+		console.log(err);
 		return res.status(500).send(Array({msg:err,param:"db"}))
 	})
 }
@@ -155,4 +161,28 @@ const getProductImage=(req,res)=>{
     })
 }
 
-module.exports={getProductById,getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};
+//pengennya overloading ke method updateProduct
+//tapi ternyata javascript gak support overloading,
+//jadi terpaksa buat method baru
+const decreaseProductStock=(productId,purchasedQty)=>{
+	 Product.findOne({
+        attributes: ['id','name','description','price','stock','image','unit'],
+        where: {
+            id: parseInt(productId)
+        }
+    }).then(product=>{
+    	const previousStock=parseInt(product.stock);
+    	previousStock-parseInt(purchasedQty);
+    	product.update({
+    		stock: previousStock-parseInt(purchasedQty)
+    	},{
+    		where:{
+				id:parseInt(productId)
+			}
+    	})
+    }).catch(err=>{
+    	console.log(err);
+    })
+}
+
+module.exports={decreaseProductStock,getProductById,getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};

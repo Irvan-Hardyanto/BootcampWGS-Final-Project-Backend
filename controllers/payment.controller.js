@@ -1,17 +1,13 @@
 const db=require("../models");
 const path = require('node:path');
-const { payment: Payment} = db;
+const productController= require('./product.controller')
+const { payment: Payment,sequelize } = db;
 
 const addPayment=(req,res)=>{
-	
-	//harusnya payment untuk tiap transaksi itu cuma bisa satu
-	console.log('A REQUEST HAS BEEN RECEIVED')
-	// console.log('req.body is: '+(req.body));
-	console.log('userId: '+parseInt(req.body.userId));
-	console.log('items: '+req.body.items);
-	console.log('nominal: '+parseInt(req.body.nominal));
-	console.log('paymentConfirmation: '+req.file.path);
-
+	const purchasedProducts=JSON.parse(req.body.items);
+	for(let item of purchasedProducts){
+		productController.decreaseProductStock(item.productId,item.qty);
+	}
 	Payment.create({
 		userId: parseInt(req.body.userId),
 		items: req.body.items,
@@ -19,7 +15,6 @@ const addPayment=(req,res)=>{
 		paymentConfirmation: req.file.path,
 		paid: false
 	}).then(pay=>{
-		console.log('appending succes')
 		res.status(200).send('Payment Success!');
 	}).catch(err=>{
 		console.log(err);
@@ -30,10 +25,10 @@ const addPayment=(req,res)=>{
 //tampilkan semua, literally semua data pembayaran yang ada di tabel
 //kalo rekord nya udah jutaan butuh kasus khusus (?)
 const getAllPaymentData=(req,res)=>{
-	Payment.findAll({
-		attributes: ['id','userId','items','nominal','paid','createdAt','updatedAt'],
-	}).then(payments=>{
-		return res.status(200).send(payments);
+	sequelize.query(`SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" 
+		FROM "Payments" AS "a"
+INNER JOIN t_user AS "b" ON a."userId" = b.id`).then(([results])=>{
+		return res.status(200).send(results);
 	}).catch(err=>{
 		console.log(err);
 		return res.status(500).send(err);
@@ -42,6 +37,7 @@ const getAllPaymentData=(req,res)=>{
 
 //cari data transaksi tertentu
 //route nya harus ada param paymentId!
+//kurangin stok barang yang dibeli customer
 const finishPayment=(req,res)=>{
 	Payment.findOne({
 		attributes:['id','userId','items','nominal','paid','createdAt','updatedAt'],

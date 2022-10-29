@@ -111,13 +111,12 @@ app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)
 
 app.options('/products', cors(corsOptions))
 app.get('/products',cors(corsOptions),productController.getAllProduct);
-
-app.options('/products', cors(corsOptions))
 app.post('/products',[cors(corsOptions),upload.single('image')],productController.addProduct)
 
 app.options('/products/:productId', cors(corsOptions))
 //route untuk melihat detail produk tertentu
 app.get('/products/:productId',[cors(corsOptions)],productController.getProductById)
+app.put('/products/:productId',[cors(corsOptions),upload.single('image')],productController.updateProduct)
 
 //tambahin route PUT sama DELETE buat hapus barang
 

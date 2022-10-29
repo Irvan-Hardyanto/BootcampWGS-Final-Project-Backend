@@ -47,7 +47,7 @@ const getAllSellingData = (req,res)=>{
 		let rawQuery="";
 
 		const groupby=req.query.groupby;
-		if(groupby==='product'){
+		if(groupby==="product"){
 			//tampilkan data selling berdasarkan nama produk
 			rawQuery=`SELECT a."productId",a."productName", SUM(a.quantity) AS "totalProductSold"
 						FROM "Sellings" AS "a"
@@ -58,8 +58,8 @@ const getAllSellingData = (req,res)=>{
 				console.log(err)
 				res.status(500).send(err);
 			})
-		}else if(groupby==='customer'){
-			rawQuery=`SELECT "UsrPay"."customerId","UsrPay".name,SUM("Sellings".quantity) AS "totBuy"
+		}else if(groupby==="customer"){
+			rawQuery=`SELECT "UsrPay"."customerId","UsrPay".name,SUM("Sellings".quantity) AS "totBuy",SUM("Sellings"."totalPrice") AS "totPaid"
 FROM (SELECT a.id AS "customerId",a.name,b.id AS "paymentId"
 FROM t_user AS "a" INNER JOIN "Payments" AS "b"
 ON a.id=b."userId") AS "UsrPay" INNER JOIN "Sellings"
