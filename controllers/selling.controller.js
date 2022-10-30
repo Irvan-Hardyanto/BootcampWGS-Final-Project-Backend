@@ -22,10 +22,26 @@ const insertSellingData = (req,res)=>{
 		res.status(500).send(err);
 	})
 }
-
+const getCustomerPurchaseData = (req,res)=>{
+	sequelize.query(`SELECT s."productName", SUM(s.quantity) AS "totPurchased"
+					FROM "Payments" AS "p" INNER JOIN "Sellings" AS "s"
+					ON p.id=s."paymentId"
+					WHERE p."userId"=${parseInt(req.query.userid)}
+					GROUP BY s."productName" `
+	).then(([results])=>{
+		res.status(200).send(results);
+	}).catch(err=>{
+		console.log(err);
+		res.status(500).send(err);
+	})
+}
 //GET
 const getAllSellingData = (req,res)=>{
-	let obj = {
+	console.log('req.query.userId is : '+req.query.userid);
+	if(req.query.userid!== undefined){
+		getCustomerPurchaseData(req,res);
+	}else{
+		let obj = {
 		attributes:[
 			'id',
 			'paymentId',
@@ -82,6 +98,7 @@ GROUP BY "UsrPay"."customerId","UsrPay".name`;
 			console.log(err);
 			res.status(500).send(err);
 		})
+	}
 	}
 }
 

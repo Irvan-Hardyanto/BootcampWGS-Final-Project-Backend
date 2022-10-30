@@ -47,6 +47,17 @@ module.exports = class CustomTransport extends Transport {
     }).catch(err=>{
       console.log('an error has occured while logging');
       console.log('error is: '+err);
+      console.log('data is: '+{
+      userId,
+      timestamp,
+      role,
+      sourceIP,
+      method,
+      url,
+      statusCode,
+      responseTime,
+      totalTime
+    })
     })
   }
 
