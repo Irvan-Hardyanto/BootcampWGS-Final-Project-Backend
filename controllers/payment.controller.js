@@ -27,7 +27,8 @@ const addPayment=(req,res)=>{
 const getAllPaymentData=(req,res)=>{
 	sequelize.query(`SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" 
 		FROM "Payments" AS "a"
-INNER JOIN t_user AS "b" ON a."userId" = b.id`).then(([results])=>{
+INNER JOIN t_user AS "b" ON a."userId" = b.id
+ORDER BY a."createdAt" DESC`).then(([results])=>{
 		return res.status(200).send(results);
 	}).catch(err=>{
 		console.log(err);
