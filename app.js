@@ -43,7 +43,7 @@ db.sequelize.sync().then(succ=>{
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
-app.use(middlewares.morganMiddleware);
+// app.use(middlewares.morganMiddleware);
 app.set('view engine', 'ejs');
 
 //route untuk menambahkan data tertentu ke dalam tabel tertentu, menggunakan kueri sql biasa
@@ -174,6 +174,9 @@ app.get('/sellings',[cors(corsOptions)],sellingController.getAllSellingData);
 
 app.options('/logs',cors(corsOptions));
 app.get('/logs',[cors(corsOptions)],logController.getAllLogs);
+
+app.options('/logs/download',cors(corsOptions));
+app.get('/logs/download',[cors(corsOptions)],logController.downloadLog);
 // app.put('/carts/:userId/')
 
 // //route untuk menghapus keranjang beserta seluruh isinya milik user tertentu
