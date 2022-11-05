@@ -15,7 +15,7 @@ const LOG_FILE_NAME= 'http-log.csv';
 const getAllLogs=(req,res)=>{
 	const page = parseInt(req.query.page) || 0;//halaman ke-1 -> page ke-0
 	const rowsPerPage = parseInt(req.query.limit) || ROWS_PER_PAGE;//jumlah row pasa setiap halaman
-	const searchQuery = req.query.search_query || "";//kueri pencarian log
+	const searchQuery = req.query["search-query"] || "";//kueri pencarian log
 	const offset = page * rowsPerPage;//offset 
 
 	const minTimestamp = req.query.min_timestamp || "";

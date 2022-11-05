@@ -1,11 +1,39 @@
 const db=require("../models");
 const path = require('node:path');
+const {Op, Sequelize} = require("sequelize");
 
 const { product: Product } = db;
+const ROWS_PER_PAGE = 8;
 
-const getAllProduct = (req,res)=>{	
-	Product.findAll({
-		attributes:['id','name','description','price','stock','image','unit','createdAt','updatedAt']
+const getAllProduct = (req,res)=>{
+	const page = parseInt(req.query.page) || 0;//halaman ke-1 -> page ke-0
+	const rowsPerPage = parseInt(req.query.limit) || ROWS_PER_PAGE;//jumlah row pasa setiap halaman
+	const searchQuery = req.query["search-query"] || "";//kueri pencarian log
+	const offset = page * rowsPerPage;//offset 
+
+	let totalRows = 0;
+	let totalPage = 0;
+
+	let whereCondition = {};
+	whereCondition ={
+		[Op.or]:[
+			Sequelize.where(Sequelize.fn('lower',Sequelize.col('name')),{
+				[Op.like]: '%'+searchQuery.toLowerCase()+'%'
+			})
+		]
+	}
+	Product.count({
+		where:whereCondition
+	}).then(rowCount=>{
+		totalRows = rowCount;
+		totalPage =  Math.ceil(rowCount / rowsPerPage);
+
+		return Product.findAll({
+			attributes:['id','name','description','price','stock','image','unit','createdAt','updatedAt'],
+			where:whereCondition,
+			offset:offset,
+			limit:rowsPerPage
+		})
 	}).then(products=>{
 		if(products.length===0){
 			return res.status(500).send(
@@ -15,8 +43,17 @@ const getAllProduct = (req,res)=>{
 				})
 			)
 		}else{
-			return res.status(200).send(products);
+			return res.status(200).send({
+				result:products,
+				page: page,
+				rowsPerPage: rowsPerPage,
+				totalRows:totalRows,
+				totalPage: totalPage
+			});
 		}
+	}).catch(err=>{
+		console.log(err);
+		res.status(500).send(err);
 	});	
 }
 

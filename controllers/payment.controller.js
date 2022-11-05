@@ -1,8 +1,9 @@
 const db=require("../models");
 const path = require('node:path');
 const productController= require('./product.controller')
+const isNumber = require('is-number');
 const { payment: Payment,sequelize } = db;
-
+const ROWS_PER_PAGE = 5;
 const addPayment=(req,res)=>{
 	const purchasedProducts=JSON.parse(req.body.items);
 	for(let item of purchasedProducts){
@@ -25,11 +26,42 @@ const addPayment=(req,res)=>{
 //tampilkan semua, literally semua data pembayaran yang ada di tabel
 //kalo rekord nya udah jutaan butuh kasus khusus (?)
 const getAllPaymentData=(req,res)=>{
-	sequelize.query(`SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" 
-		FROM "Payments" AS "a"
-INNER JOIN t_user AS "b" ON a."userId" = b.id
-ORDER BY a."createdAt" DESC`).then(([results])=>{
-		return res.status(200).send(results);
+	const paid=req.query.paid==="true"?"True":"False";//true atau false
+	const page = parseInt(req.query.page) || 0;//halaman ke-1 -> page ke-0
+	const rowsPerPage = parseInt(req.query.limit) || ROWS_PER_PAGE;//jumlah row pasa setiap halaman
+	let searchQuery = req.query["search-query"] || "";//kueri pencarian log
+	searchQuery=searchQuery.toLowerCase();
+
+	const offset = page * rowsPerPage;//offset 
+
+	const minTimestamp = req.query.min_timestamp || "";
+	const maxTimestamp = req.query.max_timestamp || "";
+
+	let totalRows = 0;
+	let totalPage = 0;
+
+	let query = '';
+
+	if(searchQuery===""){
+		query = `SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" FROM "Payments" AS "a" INNER JOIN t_user AS "b" ON a."userId" = b.id WHERE a.paid=${paid} ORDER BY a."createdAt" DESC`;
+	}else if(isNumber(searchQuery)){
+		query = `SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" FROM "Payments" AS "a" INNER JOIN t_user AS "b" ON a."userId" = b.id WHERE a.paid=${paid} AND (a.nominal=${searchQuery}) ORDER BY a."createdAt" DESC`;
+	}else{
+		query = `SELECT a.id,b.name,a.items,a.nominal,a.paid,a."createdAt",a."updatedAt" FROM "Payments" AS "a" INNER JOIN t_user AS "b" ON a."userId" = b.id WHERE a.paid=${paid} AND (LOWER(b.name) LIKE '%${searchQuery}%') ORDER BY a."createdAt" DESC`;
+	}
+	//hitung jumlah seluruh rekord yang ada
+	sequelize.query(query).then(([results])=>{
+		totalRows = results.length;
+		totalPage =  Math.ceil(results.length / rowsPerPage);
+		return sequelize.query(query+` OFFSET ${offset} LIMIT ${rowsPerPage}`);
+	}).then(([results])=>{
+		return res.status(200).send({
+			result:results,
+			page: page,
+			rowsPerPage: rowsPerPage,
+			totalRows:totalRows,
+			totalPage: totalPage
+		});
 	}).catch(err=>{
 		console.log(err);
 		return res.status(500).send(err);
@@ -39,7 +71,7 @@ ORDER BY a."createdAt" DESC`).then(([results])=>{
 //cari data transaksi tertentu
 //route nya harus ada param paymentId!
 //kurangin stok barang yang dibeli customer
-const finishPayment=(req,res)=>{
+const updatePaymentStatus=(req,res,action)=>{
 	Payment.findOne({
 		attributes:['id','userId','items','nominal','paid','createdAt','updatedAt'],
 		where:{
@@ -47,13 +79,28 @@ const finishPayment=(req,res)=>{
 		}
 	}).then(payment=>{
 		if(!payment){
-			return res.status(400).send(Array({msg:"Payment not found!",param:"userId"}));
+			return res.status(400).send(Array({msg:"Payment not found!",param:"paymentId"}));
 		}else{
-			payment.update({
-				paid: true	
-			}).then(succ=>{
-				return res.status(200).send();
-			})
+			if(action==='finish'){
+				//tandai transaksi sudah selesai
+				payment.update({
+					paid: true	
+				}).then(succ=>{
+					return res.status(200).send();
+				})
+			}else if(action==='undo'){
+				//batalkan transaksi yang sudah selesai
+				payment.update({
+					paid: false	
+				}).then(succ=>{
+					//Hapus selling data nya....
+					return res.status(200).send();
+				})
+			}else{
+				return res.status(400).send(Array({
+					msg:'Invalid query string!!!'
+				}))
+			}
 		}
 	}).catch(err=>{
 		console.log(err);
@@ -92,4 +139,4 @@ const getPaymentConfirmation=(req,res)=>{
 	})
 }
 
-module.exports={addPayment,getAllPaymentData,finishPayment,findPaymentByUserId,getPaymentConfirmation};
+module.exports={addPayment,getAllPaymentData,updatePaymentStatus,findPaymentByUserId,getPaymentConfirmation};

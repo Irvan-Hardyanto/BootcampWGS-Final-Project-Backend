@@ -163,14 +163,14 @@ app.post('/payments',[cors(corsOptions),upload.single('paymentConfirmation')],pa
 
 app.options('/payments/:paymentId',cors(corsOptions));
 //untuk menandai kalau transaksinya sudah selesai
-app.put('/payments/:paymentId',[cors(corsOptions)],paymentController.finishPayment);
+app.put('/payments/:paymentId',[cors(corsOptions)],paymentController.updatePaymentStatus);
 
 app.options('/payments/image/:paymentId', cors(corsOptions));
 app.get('/payments/image/:paymentId',[cors(corsOptions)],paymentController.getPaymentConfirmation);
 
 app.options('/sellings',cors(corsOptions));
 app.post('/sellings',[cors(corsOptions)],sellingController.insertSellingData);
-app.get('/sellings',[cors(corsOptions)],sellingController.getAllSellingData);
+app.get('/sellings',[cors(corsOptions)],sellingController.getSellingData);
 
 app.options('/logs',cors(corsOptions));
 app.get('/logs',[cors(corsOptions)],logController.getAllLogs);
