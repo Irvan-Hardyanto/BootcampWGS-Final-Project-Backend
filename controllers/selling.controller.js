@@ -26,6 +26,17 @@ const insertSellingData = (req,res)=>{
 	})
 }
 
+//DELETE /sellings?
+const deleteSellingData = (paymentId)=>{
+	return Selling.destroy({
+		where:{
+			paymentId: parseInt(paymentId)
+		}
+	}).catch(err=>{
+		console.log(err);
+	})
+}
+
 const getCustomerPurchaseData = (req,res)=>{
 	sequelize.query(`SELECT s."productName", SUM(s.quantity) AS "totPurchased"
 					FROM "Payments" AS "p" INNER JOIN "Sellings" AS "s"
@@ -229,4 +240,4 @@ const getSellingData = (req,res)=>{
 	}
 }
 
-module.exports={insertSellingData,getSellingData};
+module.exports={insertSellingData,getSellingData,deleteSellingData};

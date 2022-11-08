@@ -4,6 +4,8 @@ const multer  = require('multer');
 const { faker } = require('@faker-js/faker');
 var morgan = require('morgan');
 const cors = require('cors');
+
+const bp = require("body-parser");
 var corsOptions = {
     origin:'http://localhost:3000'
 };
@@ -18,6 +20,7 @@ const paymentController=require('./controllers/payment.controller');
 const sellingController=require('./controllers/selling.controller');
 const userController=require('./controllers/user.controller');
 const logController=require('./controllers/log.controller');
+const paymentLogController=require('./controllers/paymentLog.controller');
 
 //middleware untuk menangani upload file via form
 //penjelasan singkatnya: https://github.com/expressjs/multer#readme
@@ -38,6 +41,10 @@ db.sequelize.sync().then(succ=>{
 }).catch(err=>{
     //console.log(err);
 });
+
+//UPDATE 6 Nov 2022, krn tiba-tiba req.body undefined.
+app.use(bp.urlencoded({ extended: true }));
+app.use(bp.json())
 //midleware
 //supaya requestnyadikonversike json
 app.use(express.json());
@@ -109,6 +116,9 @@ app.get('/profile',[upload.none(),middlewares.authJwt.verifyUserToken],(req,res)
 
 })
 
+app.options('/product-list', cors(corsOptions))
+app.get('/product-list',cors(corsOptions),productController.getProductList);
+
 app.options('/products', cors(corsOptions))
 app.get('/products',cors(corsOptions),productController.getAllProduct);
 app.post('/products',[cors(corsOptions),upload.single('image')],productController.addProduct)
@@ -161,9 +171,9 @@ app.get('/payments',[cors(corsOptions)],paymentController.getAllPaymentData);
 app.post('/payments',[cors(corsOptions),upload.single('paymentConfirmation')],paymentController.addPayment);
 
 
-app.options('/payments/:paymentId',cors(corsOptions));
+app.options('/payments',cors(corsOptions));
 //untuk menandai kalau transaksinya sudah selesai
-app.put('/payments/:paymentId',[cors(corsOptions)],paymentController.updatePaymentStatus);
+app.put('/payments',[cors(corsOptions)],paymentController.updatePaymentStatus);
 
 app.options('/payments/image/:paymentId', cors(corsOptions));
 app.get('/payments/image/:paymentId',[cors(corsOptions)],paymentController.getPaymentConfirmation);
@@ -178,6 +188,10 @@ app.get('/logs',[cors(corsOptions)],logController.getAllLogs);
 app.options('/logs/download',cors(corsOptions));
 app.get('/logs/download',[cors(corsOptions)],logController.downloadLog);
 // app.put('/carts/:userId/')
+
+app.options('/payment-logs',cors(corsOptions));
+app.get('/payment-logs',[cors(corsOptions)],paymentLogController.getPaymentLogs);
+app.post('/payment-logs',[cors(corsOptions)],paymentLogController.insertPaymentLog);
 
 // //route untuk menghapus keranjang beserta seluruh isinya milik user tertentu
 // app.delete('/carts/:userId/')

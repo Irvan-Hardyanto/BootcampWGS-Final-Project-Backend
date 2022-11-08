@@ -1,6 +1,7 @@
 const db=require("../models");
 const path = require('node:path');
 const productController= require('./product.controller')
+const sellingController= require('./selling.controller');	
 const isNumber = require('is-number');
 const { payment: Payment,sequelize } = db;
 const ROWS_PER_PAGE = 5;
@@ -71,11 +72,13 @@ const getAllPaymentData=(req,res)=>{
 //cari data transaksi tertentu
 //route nya harus ada param paymentId!
 //kurangin stok barang yang dibeli customer
-const updatePaymentStatus=(req,res,action)=>{
+const updatePaymentStatus=(req,res)=>{
+	const paymentId=req.query["payment-id"]||0;
+	const action = req.query.action || '';
 	Payment.findOne({
 		attributes:['id','userId','items','nominal','paid','createdAt','updatedAt'],
 		where:{
-			id: parseInt(req.params.paymentId)
+			id: parseInt(paymentId)
 		}
 	}).then(payment=>{
 		if(!payment){
@@ -87,14 +90,25 @@ const updatePaymentStatus=(req,res,action)=>{
 					paid: true	
 				}).then(succ=>{
 					return res.status(200).send();
+				}).catch(err=>{
+					console.log(err);
 				})
 			}else if(action==='undo'){
 				//batalkan transaksi yang sudah selesai
 				payment.update({
 					paid: false	
 				}).then(succ=>{
-					//Hapus selling data nya....
+					// //Hapus selling data nya....
+					sellingController.deleteSellingData(parseInt(payment.id));
+
+					// //revert status barang nya
+					const items = JSON.parse(payment.items);
+					for (let item of items){
+						productController.increaseProductStock(item.productId,item.qty);
+					}
 					return res.status(200).send();
+				}).catch(err=>{
+					console.log(err);
 				})
 			}else{
 				return res.status(400).send(Array({

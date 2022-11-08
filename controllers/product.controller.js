@@ -57,6 +57,20 @@ const getAllProduct = (req,res)=>{
 	});	
 }
 
+//temporary, khusus buat daftar produk customer
+const getProductList = (req,res)=>{
+	Product.findAll({
+		attributes:['id','name','description','price','stock','image','unit','createdAt','updatedAt'],
+	}).then(products=>{
+		return res.status(200).send(
+			products
+		);
+	}).catch(err=>{
+		console.log(err);
+		res.status(500).send(err);
+	});	
+}
+
 //ini bisa luas makna nya
 const getProduct= (req,res)=>{
 	db.sequelize.query(`SELECT id,name,description,price,stock,image,unit FROM 'Products' WHERE name LIKE '%${req.body.name}%'`).then(([products, metadata])=>{
@@ -209,8 +223,7 @@ const decreaseProductStock=(productId,purchasedQty)=>{
         }
     }).then(product=>{
     	const previousStock=parseInt(product.stock);
-    	previousStock-parseInt(purchasedQty);
-    	product.update({
+    	return product.update({
     		stock: previousStock-parseInt(purchasedQty)
     	},{
     		where:{
@@ -222,4 +235,24 @@ const decreaseProductStock=(productId,purchasedQty)=>{
     })
 }
 
-module.exports={decreaseProductStock,getProductById,getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};
+const increaseProductStock=(productId,returnedQty)=>{
+	Product.findOne({
+        attributes: ['id','name','description','price','stock','image','unit'],
+        where: {
+            id: parseInt(productId)
+        }
+    }).then(product=>{
+    	const previousStock=parseInt(product.stock);
+    	return product.update({
+    		stock: previousStock + parseInt(returnedQty)
+    	},{
+    		where:{
+				id:parseInt(productId)
+			}
+    	})
+    }).catch(err=>{
+    	console.log(err);
+    })
+}
+
+module.exports={getProductList,decreaseProductStock,increaseProductStock,getProductById,getProductImage,getAllProduct,getProduct,deleteProduct,updateProduct,addProduct};
